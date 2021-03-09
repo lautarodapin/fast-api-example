@@ -55,9 +55,16 @@ def main():
 
 
 @app.post('/login')
-def login(user: schemas.UserIn, Authorize: AuthJWT = Depends()):
+def login(user: schemas.UserIn, Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     # if user.username != "test" or user.password != "test":
     #     raise HTTPException(status_code=401,detail="Bad username or password")
+
+    _user = db.query(models.User).filter(models.User.username == user.username).first()
+    if _user is None:
+        raise HTTPException(404, f"El usuario {user.username} no esta registrado")
+    
+    if _user.check_password(user.password):
+        raise HTTPException(404, f"Se ingreso la contraseña incorrecta para el usuario {user.username}")
 
     access_token = Authorize.create_access_token(subject=user.username)
     refresh_token = Authorize.create_refresh_token(subject=user.username)
@@ -95,9 +102,20 @@ def user(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
 @app.post("/user", response_model=schemas.User)
 def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     data = models.User(**user.dict())
+    data.set_password(data.password)
     db.add(data)
     db.commit()
     return data
+
+
+@app.delete("/user/{pk}")
+async def delete_user(pk: int, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+    user = db.query(models.User).get(pk)
+    db.delete(user)
+    db.commit()
+    return dict(msg=f"El usuario {user.username} fue borrado correctamente")
+
 
 
 @app.get("/user/get-current/", response_model=schemas.User)
@@ -136,3 +154,26 @@ def delete_record(pk: int, db: Session = Depends(get_db)):
     db.delete(record)
     db.commit()
     return {"msg": f"Record {pk} deleted successfully!"}
+
+
+""" NOTAS """
+@app.get("/notas", response_model=List[schemas.Nota])
+def notas(db: Session = Depends(get_db)):
+    notas = db.query(models.Nota).all()
+    return notas
+
+@app.post("/notas", response_model=schemas.Nota)
+def create_nota(nota: schemas.NotaIn, db: Session = Depends(get_db), auth: AuthJWT = Depends()):
+    auth.jwt_required()
+    nota = models.Nota(**nota.dict())
+    db.add(nota)
+    db.commit()
+    return nota
+
+@app.delete("/notas/{pk}")
+def delete_nota(pk: int, db: Session = Depends(get_db), auth: AuthJWT = Depends()):
+    auth.jwt_required()
+    nota = db.query(models.Nota).get(pk)
+    db.delete(nota)
+    db.commit()
+    return dict(msg=f"La nota {nota.titulo} fue borrada correctamente")
