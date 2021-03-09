@@ -28,18 +28,14 @@ class PostRecord(BaseModel):
 
 
     
-class UserPost(BaseModel):
+class UserIn(BaseModel):
     username: str
     password: str
 
     class Config:
         orm_mode = True
-class User(UserPost):
+class User(UserIn):
     id: int
-    
+
     class Config:
         orm_mode = True
-
-class Settings(BaseModel):
-    authjwt_secret_key: str = "secret_key"
-
