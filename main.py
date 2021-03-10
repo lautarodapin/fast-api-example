@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -61,7 +61,7 @@ def login(user: schemas.UserIn, Authorize: AuthJWT = Depends(), db: Session = De
     if _user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"El usuario {user.username} no esta registrado")
     
-    if _user.check_password(user.password):
+    if not _user.check_password(user.password):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Se ingreso la contraseña incorrecta para el usuario {user.username}")
 
     access_token = Authorize.create_access_token(subject=user.username)

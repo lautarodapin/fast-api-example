@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@next"></script>
+
+    <title>Document</title>
+</head>
+<body>
+    <head>
+    </head>
+    <main>
+        <div id="app">
+            {{counter}}
+            <button @click="add"></button>
+        </div>
+    </main>
+    <footer>
+        <script>
+        const app = Vue.createApp({
+            data(){
+                return {
+                    counter: 0,
+                }
+            },
+            methods:{
+                add(){this.counter += 1;}
+            }
+        });
+        const mountedApp = app.mount("#app")
+        </script>
+    </footer>
+    
+</body>
+</html>
