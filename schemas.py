@@ -1,6 +1,6 @@
 
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Record(BaseModel):
@@ -44,8 +44,8 @@ class User(UserIn):
 class NotaIn(BaseModel):
     class Config:
         orm_mode = True
-    titulo: str
-    cuerpo: str
+    titulo: str = Field(..., example="Nota libertaria")
+    cuerpo: str = Field(..., example="Soldado de milei")
 class Nota(NotaIn):
     class Config:
         orm_mode = True
